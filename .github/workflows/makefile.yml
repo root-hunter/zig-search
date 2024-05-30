@@ -27,21 +27,21 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: $MAIN_VERSION
-        release_name: $VERSION
+        tag_name: ${{ env.MAIN_VERSION }}
+        release_name: ${{ env.VERSION }}
         draft: true
         prerelease: false
 
     - name: Create release archive
-      run: tar -cvzf $ARCHIVE_NAME bin/zig-search
+      run: tar -cvzf ${{ env.ARCHIVE_NAME }} bin/zig-search
     
     - uses: actions/upload-release-asset@v1.0.1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./$ARCHIVE_NAME
-        asset_name: $ARCHIVE_NAME
+        asset_path: ./${{ env.ARCHIVE_NAME }}
+        asset_name: ${{ env.ARCHIVE_NAME }}
         asset_content_type: application/tar+gzip
 
     - uses: eregon/publish-release@v1
