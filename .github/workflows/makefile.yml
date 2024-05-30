@@ -9,7 +9,7 @@ on:
 env:
   MAIN_VERSION: v1
   VERSION: 1.0.1
-  ARCHIVE_NAME: zig-search_$VERSION_release.tar.gz
+  ARCHIVE_NAME: zig-search_${{ env.VERSION }}_release.tar.gz
 
 jobs:
   release:
