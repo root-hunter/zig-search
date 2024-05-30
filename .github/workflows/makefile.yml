@@ -7,14 +7,40 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
-
+  release:
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v4
     - uses: goto-bus-stop/setup-zig@v2
-
-
-    - name: Install dependencies
+    
+    - name: Build release
       run: make build-exe
+      
+    - name: Create Draft Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v1
+        release_name: start
+        draft: true
+        prerelease: false
+
+    - name: Create release archive
+      run: tar -cvzf zig-search_release.tar.gz bin/zig-search
+    
+    - uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./zig-search_release.tar.gz
+        asset_name: zig-search_release.tar.gz
+        asset_content_type: application/tar+gzip
+
+    - uses: eregon/publish-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        release_id: ${{ steps.create_release.outputs.id }}
