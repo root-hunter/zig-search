@@ -7,7 +7,7 @@ on:
     branches: [ "stable" ]
 
 env:
-  TAG: v1
+  TAG: linux
   VERSION: 1.0.5
   
 jobs:
