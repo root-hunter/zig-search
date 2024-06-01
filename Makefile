@@ -13,5 +13,8 @@ build-exe:
 test: build-exe
 	${EXEC_PATH} ${TEST_PARAMS}
 
-dev:
+rundev:
 	zig run src/main.zig -- ${TEST_PARAMS}
+
+runrelease: build-exe
+	./bin/zig-search ${TEST_PARAMS}

@@ -46,11 +46,15 @@ _Below is an example of how you can instruct your audience on installing and set
 
 1. Clone the repo
    ```sh
-   git clone https://github.com/root-hunter/zig-search
+git clone https://github.com/root-hunter/zig-search
    ```
 2. Build executable
    ```sh
-   zig build-exe src/main.zig --name zig-search -O ReleaseSafe  --build-id=sha1 -static
+make build-exe
+   ```
+   or
+   ```sh
+zig build-exe src/main.zig --name zig-search -O ReleaseSafe  --build-id=sha1 -static
    ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
