@@ -4,7 +4,7 @@ const Dir = std.fs.Dir;
 const IterableDir = std.fs.IterableDir;
 const File = std.fs.File;
 
-const BUFFER_SIZE = 1024 * 1024 * 128;
+const BUFFER_SIZE = 1024 * 1024 * 256;
 var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
 const allocator = arena.allocator();
 const flags = std.fs.Dir.OpenDirOptions{
@@ -16,6 +16,7 @@ const Arguments = struct {
     startPath: []u8 = "",
     searchString: []u8 = "",
     caseSensitive: bool = false,
+    allMatch: bool = false,
     fileExtensions: std.ArrayList([]const u8) = std.ArrayList([]const u8).init(allocator),
 };
 var arguments = Arguments{};
@@ -33,7 +34,10 @@ pub fn initArgs() !void {
     }
 
     if (argsIterator.next()) |searchString| {
+        //const buf = try allocator.alloc(u8, searchString.len - 2);
+        //std.mem.copyBackwards(u8, buf, searchString[1..(searchString.len - 2)]);
         arguments.searchString = @constCast(searchString);
+
         std.debug.print("Search string: {s}\n", .{searchString});
     } else {
         std.debug.print("No args\n", .{});
@@ -56,6 +60,8 @@ pub fn initArgs() !void {
             } else {
                 std.log.err("Not valid file extensions, the extensions must be in this form: txt,js,c,cpp \n", .{});
             }
+        } else if (std.mem.eql(u8, searchString, "--all-match")) {
+            arguments.allMatch = true;
         }
     }
 }
@@ -83,9 +89,9 @@ pub fn main() !void {
             var k: usize = 0;
             while (k < arguments.fileExtensions.items.len) {
                 const ext = arguments.fileExtensions.items[k];
-               
+
                 var it = std.mem.split(u8, entry.path, ".");
-                var fileExt: [] const u8 = "";
+                var fileExt: []const u8 = "";
 
                 while (it.next()) |fe| {
                     fileExt = fe;
@@ -110,10 +116,12 @@ pub fn main() !void {
         }
     }
 
+    std.log.info("Found {} files to be scanned", .{paths.items.len});
+
     var i: usize = 0;
+    const fileOpenOptions = std.fs.File.OpenFlags{ .mode = std.fs.File.OpenMode.read_only };
     while (i < paths.items.len) {
         const filePath = paths.items[i];
-        const fileOpenOptions = std.fs.File.OpenFlags{ .mode = std.fs.File.OpenMode.read_only };
         const file: File = try std.fs.openFileAbsolute(filePath, fileOpenOptions);
         defer file.close();
         const metadata = try file.metadata();
@@ -125,6 +133,7 @@ pub fn main() !void {
             const data = try stream.readAllAlloc(allocator, BUFFER_SIZE);
             defer allocator.free(data);
             var k: usize = 0;
+
             while (k + arguments.searchString.len + 1 < data.len) {
                 if (data[k] == arguments.searchString[0]) {
                     const slice = &data[k..(k + arguments.searchString.len)];
@@ -135,8 +144,13 @@ pub fn main() !void {
                     }
                     const result = std.mem.eql(u8, (slice.*), arguments.searchString);
                     if (result) {
-                        std.log.info("FOUND match: {s}", .{filePath});
+                        std.log.info("FOUND match at {} byte: {s}", .{ k, filePath });
+
+                        if (!arguments.allMatch) {
+                            break;
+                        }
                     }
+
                     k += arguments.searchString.len;
                 } else {
                     k += 1;

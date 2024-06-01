@@ -1,5 +1,5 @@
 EXEC_PATH=./bin/zig-search
-TEST_PARAMS=${HOME} password --case-sensitive --file-extensions js,html
+TEST_PARAMS=${HOME} "password" --file-extensions txt
 
 build-exe:
 	zig build-exe src/main.zig \
