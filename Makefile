@@ -8,7 +8,6 @@ build-exe:
 
 	mv zig-search* bin
 
-
 # Search all file that cointains the "password" word
 test: build-exe
 	${EXEC_PATH} ${TEST_PARAMS}
