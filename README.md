@@ -66,6 +66,7 @@ _Below is an example of how you can instruct your audience on installing and set
 <!-- ROADMAP -->
 ## Roadmap
 
+- [ ] Help command
 - [ ] Multihreading
 - [ ] Advance text search
 
