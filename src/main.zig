@@ -16,11 +16,11 @@ const Arguments = struct {
     startPath: []u8 = "",
     searchString: []u8 = "",
     caseSensitive: bool = false,
+    fileExtensions: std.ArrayList([]const u8) = std.ArrayList([]const u8).init(allocator),
 };
+var arguments = Arguments{};
 
-pub fn initArgs() !Arguments {
-    var arguments = Arguments{};
-
+pub fn initArgs() !void {
     var argsIterator = try std.process.ArgIterator.initWithAllocator(allocator);
     defer argsIterator.deinit();
     _ = argsIterator.next();
@@ -39,7 +39,25 @@ pub fn initArgs() !Arguments {
         std.debug.print("No args\n", .{});
     }
 
-    return arguments;
+    while (argsIterator.next()) |searchString| {
+        if (std.mem.eql(u8, searchString, "--case-sensitive")) {
+            std.log.info("Case sensitive: ON", .{});
+
+            arguments.caseSensitive = true;
+        } else if (std.mem.eql(u8, searchString, "--file-extensions")) {
+            const value = argsIterator.next();
+
+            if (value != null) {
+                var it = std.mem.split(u8, value.?, ",");
+                while (it.next()) |ext| {
+                    try arguments.fileExtensions.append(ext);
+                }
+                std.log.info("Custom extensions: {s}", .{value.?});
+            } else {
+                std.log.err("Not valid file extensions, the extensions must be in this form: txt,js,c,cpp \n", .{});
+            }
+        }
+    }
 }
 
 pub fn processData(args: Arguments) void {
@@ -49,9 +67,9 @@ pub fn processData(args: Arguments) void {
 pub fn main() !void {
     defer arena.deinit();
 
-    const args = try initArgs();
+    try initArgs();
 
-    const dir = try std.fs.openDirAbsolute(args.startPath, flags);
+    const dir = try std.fs.openDirAbsolute(arguments.startPath, flags);
 
     var paths = std.ArrayList([]const u8).init(allocator);
 
@@ -59,14 +77,36 @@ pub fn main() !void {
     defer walker.deinit();
 
     while (try walker.next()) |entry| {
-        const path = [_][]const u8{ args.startPath, entry.path };
-        if (entry.kind == std.fs.File.Kind.file and std.mem.containsAtLeast(u8, entry.path, 1, ".txt")) {
-            const filePath = try std.fs.path.join(allocator, &path);
-            defer allocator.free(filePath);
+        const path = [_][]const u8{ arguments.startPath, entry.path };
+        if (entry.kind == std.fs.File.Kind.file) {
+            var flag = false;
+            var k: usize = 0;
+            while (k < arguments.fileExtensions.items.len) {
+                const ext = arguments.fileExtensions.items[k];
+               
+                var it = std.mem.split(u8, entry.path, ".");
+                var fileExt: [] const u8 = "";
 
-            const string = try allocator.alloc(u8, filePath.len);
-            std.mem.copyBackwards(u8, string, filePath);
-            try paths.append(string);
+                while (it.next()) |fe| {
+                    fileExt = fe;
+                }
+
+                if (std.mem.eql(u8, fileExt, ext)) {
+                    flag = true;
+                    break;
+                }
+
+                k += 1;
+            }
+
+            if (flag) {
+                const filePath = try std.fs.path.join(allocator, &path);
+                defer allocator.free(filePath);
+
+                const string = try allocator.alloc(u8, filePath.len);
+                std.mem.copyBackwards(u8, string, filePath);
+                try paths.append(string);
+            }
         }
     }
 
@@ -85,19 +125,19 @@ pub fn main() !void {
             const data = try stream.readAllAlloc(allocator, BUFFER_SIZE);
             defer allocator.free(data);
             var k: usize = 0;
-            while (k + args.searchString.len + 1 < data.len) {
-                if (data[k] == args.searchString[0]) {
-                    const slice = &data[k..(k + args.searchString.len)];
+            while (k + arguments.searchString.len + 1 < data.len) {
+                if (data[k] == arguments.searchString[0]) {
+                    const slice = &data[k..(k + arguments.searchString.len)];
                     var j: usize = 0;
                     while (j < slice.len) {
                         (slice.*)[j] = std.ascii.toLower((slice.*)[j]);
                         j += 1;
                     }
-                    const result = std.mem.eql(u8, (slice.*), args.searchString);
+                    const result = std.mem.eql(u8, (slice.*), arguments.searchString);
                     if (result) {
                         std.log.info("FOUND match: {s}", .{filePath});
                     }
-                    k += args.searchString.len;
+                    k += arguments.searchString.len;
                 } else {
                     k += 1;
                 }
