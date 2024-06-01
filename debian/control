@@ -1,0 +1,12 @@
+Source: zig-search
+Section: misc
+Priority: optional
+Maintainer: Antonio Ricciardi <dev.roothunter@gmail.com>
+Build-Depends: debhelper (>= 9)
+Standards-Version: 3.9.6
+Homepage: https://github.com/root-hunter/zig-search.git
+
+Package: zig-search
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: High-performance search utility written entirely in Zig
