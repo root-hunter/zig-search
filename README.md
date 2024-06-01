@@ -3,11 +3,10 @@
 [![MIT License][license-shield]][license-url]
 [![LinkedIn][linkedin-shield]][linkedin-url]
 
-<!-- PROJECT LOGO -->
-<!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
+<!-- README Template by: https://github.com/othneildrew/Best-README-Template -->
 <br />
 <div align="center">
-  <a href="https://github.com/othneildrew/Best-README-Template">
+  <a href="https://github.com/root-hunter/zig-search/">
     <img src="images/zig-logo.png" alt="Logo">
   </a>
 
@@ -45,18 +44,21 @@ These are the prerequisites needed only to build the project, if you only want t
 _Below is an example of how you can instruct your audience on installing and setting up your app. This template doesn't rely on any external dependencies or services._
 
 1. Clone the repo
-   ```sh
+```sh
  git clone https://github.com/root-hunter/zig-search
-   ```
-2. Build executable
-   ```sh
- make build-exe
-   ```
+```
+2. Move to zig-search dir
+```sh
+cd zig-search
+```
+3. Build executable
+```sh
+make build-exe
+```
    or
-   ```sh
- zig build-exe src/main.zig --name zig-search -O ReleaseSafe  --build-id=sha1 -static
-   ```
-
+```sh
+zig build-exe src/main.zig --name zig-search -O ReleaseSafe -static
+```
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Usage
@@ -78,15 +80,11 @@ _Below is an example of how you can instruct your audience on installing and set
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
-<!-- LICENSE -->
 ## License
-
 Distributed under the MIT License. See `LICENSE` for more information.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-<!-- MARKDOWN LINKS & IMAGES -->
-<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 [license-shield]: https://img.shields.io/github/license/othneildrew/Best-README-Template.svg?style=for-the-badge
 [license-url]: https://github.com/root-hunter/zig-search/blob/main/LICENSE
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
