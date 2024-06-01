@@ -1,4 +1,5 @@
 EXEC_PATH=./bin/zig-search
+TEST_PARAMS=${HOME} password
 
 build-exe:
 	zig build-exe src/main.zig \
@@ -7,6 +8,10 @@ build-exe:
 
 	mv zig-search* bin
 
+
 # Search all file that cointains the "password" word
 test: build-exe
-	${EXEC_PATH} ${HOME} password
+	${EXEC_PATH} ${TEST_PARAMS}
+
+dev:
+	zig run src/main.zig -- ${TEST_PARAMS}
