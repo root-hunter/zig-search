@@ -1,5 +1,5 @@
 EXEC_PATH=./bin/zig-search
-TEST_PARAMS=${HOME} "password" --file-extensions txt
+TEST_PARAMS=${HOME} "password" --file-extensions txt,dart,js --thread-count 8
 
 build-exe:
 	zig build-exe src/main.zig \

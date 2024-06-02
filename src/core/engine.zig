@@ -1,8 +1,7 @@
 const std = @import("std");
 const cli = @import("cli.zig");
 const File = std.fs.File;
-const engineV8 = @import("engineV8.zig");
-
+const engineV8 = @import("engine.v8.zig");
 
 pub fn checkFileExtension(
     args: cli.Arguments,
@@ -51,27 +50,36 @@ pub fn findMatchOnce(allocator: std.mem.Allocator, args: cli.Arguments, filePath
     const metadata = try file.metadata();
     const fileSize = metadata.size();
 
-    if (fileSize >= args.searchString.len and fileSize < args.maxFileSize) {
+    var lock = engineV8.lock.tryLock();
+
+    while (!lock) {
+        lock = engineV8.lock.tryLock();
+    }
+    defer engineV8.lock.unlock();
+    
+    const searchString = try allocator.alloc(u8, args.searchString.len);
+    std.mem.copyBackwards(u8, searchString, args.searchString);
+    defer allocator.free(searchString);
+
+    if (fileSize >= searchString.len and fileSize < args.maxFileSize) {
         var bufferReader = std.io.bufferedReader(file.reader());
         const stream = bufferReader.reader();
 
         const data = try stream.readAllAlloc(allocator, args.maxFileSize);
         defer allocator.free(data);
+
         var i: usize = 0;
 
-        while (i + args.searchString.len + 1 < data.len) {
-            if (data[i] == args.searchString[0]) {
-                var slice = data[i..(i + args.searchString.len)];
-                
-                //var slice = try allocator.alloc(u8, args.searchString.len);
-                //const tmp = data[i..(i + args.searchString.len)];
-                //_ = std.mem.copyBackwards(u8, slice, tmp);
-                
+        while (i + searchString.len + 1 < data.len) {
+            if (data[i] == searchString[0]) {
+                var slice = data[i..(i + searchString.len)];
+
                 if (!args.caseSensitive) {
                     convertToLowerCase(&slice);
                 }
 
-                const result = std.mem.eql(u8, slice, args.searchString);
+                const result = std.mem.eql(u8, slice, searchString);
+
                 if (result) {
                     if (!args.allMatch) {
                         return FindResult{ .offset = i, .filePath = filePath.* };
@@ -83,6 +91,7 @@ pub fn findMatchOnce(allocator: std.mem.Allocator, args: cli.Arguments, filePath
                 i += 1;
             }
         }
+        
     }
 
     return null;
@@ -117,8 +126,8 @@ pub fn searchFiles(
                 defer allocator.free(filePath);
 
                 string = try allocator.alloc(u8, filePath.len);
-
                 std.mem.copyBackwards(u8, string, filePath);
+
                 try engineV8.stack.append(string);
             }
         }
