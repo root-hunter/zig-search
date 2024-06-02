@@ -70,7 +70,7 @@ zig build-exe src/main.zig --name zig-search -O ReleaseSafe -static
 ## Roadmap
 
 - [ ] Help command
-- [ ] Multihreading
+- [X] Multihreading
 - [ ] Advance text search
 
 
