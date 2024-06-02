@@ -6,6 +6,7 @@ pub const Arguments = struct {
     caseSensitive: bool = false,
     allMatch: bool = false,
     maxFileSize: usize = 1024 * 1024 * 256,
+    threadCount: usize = 1,
     fileExtensions: std.ArrayList([]const u8),
 };
 

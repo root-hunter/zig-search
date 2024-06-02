@@ -1,20 +1,18 @@
 const std = @import("std");
 const cli = @import("cli.zig");
 const File = std.fs.File;
+const engineV8 = @import("engineV8.zig");
 
-const fileOpenOptions = std.fs.File.OpenFlags{ 
-    .mode = std.fs.File.OpenMode.read_only
-};
 
 pub fn checkFileExtension(
     args: cli.Arguments,
     entry: std.fs.Dir.Walker.Entry,
 ) !bool {
     var flag = false;
-    var k: usize = 0;
+    var i: usize = 0;
 
-    while (k < args.fileExtensions.items.len) {
-        const ext = args.fileExtensions.items[k];
+    while (i < args.fileExtensions.items.len) {
+        const ext = args.fileExtensions.items[i];
 
         var it = std.mem.split(u8, entry.path, ".");
         var fileExt: []const u8 = "";
@@ -28,28 +26,26 @@ pub fn checkFileExtension(
             break;
         }
 
-        k += 1;
+        i += 1;
     }
 
     return flag;
 }
 
-const FindResult = struct {
-    offset: usize,
-    filePath: [] const u8
-};
+const FindResult = struct { offset: usize, filePath: []const u8 };
 
-
-pub fn convertToLowerCase(slice: *const [] u8) void {
-    var j: usize = 0;
-    while (j < slice.len) {
-        (slice.*)[j] = std.ascii.toLower((slice.*)[j]);
-        j += 1;
+pub fn convertToLowerCase(slice: *const []u8) void {
+    var i: usize = 0;
+    while (i < slice.len) {
+        (slice.*)[i] = std.ascii.toLower((slice.*)[i]);
+        i += 1;
     }
 }
 
-pub fn findMatchOnce(allocator: std.mem.Allocator, args: cli.Arguments, filePath: [] const u8) !?FindResult {
-    const file: File = try std.fs.openFileAbsolute(filePath, fileOpenOptions);
+pub fn findMatchOnce(allocator: std.mem.Allocator, args: cli.Arguments, filePath: *const []const u8) !?FindResult {
+    const fileOpenOptions = std.fs.File.OpenFlags{ .mode = std.fs.File.OpenMode.read_only };
+
+    const file: File = try std.fs.openFileAbsolute(filePath.*, fileOpenOptions);
     defer file.close();
 
     const metadata = try file.metadata();
@@ -58,32 +54,33 @@ pub fn findMatchOnce(allocator: std.mem.Allocator, args: cli.Arguments, filePath
     if (fileSize >= args.searchString.len and fileSize < args.maxFileSize) {
         var bufferReader = std.io.bufferedReader(file.reader());
         const stream = bufferReader.reader();
-        
-        //THREAD
+
         const data = try stream.readAllAlloc(allocator, args.maxFileSize);
         defer allocator.free(data);
-        var k: usize = 0;
+        var i: usize = 0;
 
-        while (k + args.searchString.len + 1 < data.len) {
-            if (data[k] == args.searchString[0]) {
-                const slice = &data[k..(k + args.searchString.len)];
-                if(!args.caseSensitive){
-                    convertToLowerCase(slice);
+        while (i + args.searchString.len + 1 < data.len) {
+            if (data[i] == args.searchString[0]) {
+                var slice = data[i..(i + args.searchString.len)];
+                
+                //var slice = try allocator.alloc(u8, args.searchString.len);
+                //const tmp = data[i..(i + args.searchString.len)];
+                //_ = std.mem.copyBackwards(u8, slice, tmp);
+                
+                if (!args.caseSensitive) {
+                    convertToLowerCase(&slice);
                 }
 
-                const result = std.mem.eql(u8, (slice.*), args.searchString);
+                const result = std.mem.eql(u8, slice, args.searchString);
                 if (result) {
                     if (!args.allMatch) {
-                        return FindResult{
-                            .offset = k,
-                            .filePath = filePath
-                        };
+                        return FindResult{ .offset = i, .filePath = filePath.* };
                     }
                 }
 
-                k += args.searchString.len;
+                i += args.searchString.len;
             } else {
-                k += 1;
+                i += 1;
             }
         }
     }
@@ -99,12 +96,10 @@ const openDirOptions = std.fs.Dir.OpenDirOptions{
 pub fn searchFiles(
     allocator: std.mem.Allocator,
     args: cli.Arguments,
-) !std.ArrayList([]const u8) {
-    if(!args.caseSensitive) {
-        convertToLowerCase(&args.searchString);     
+) !void {
+    if (!args.caseSensitive) {
+        convertToLowerCase(&args.searchString);
     }
-
-    var paths: std.ArrayList([]const u8) = std.ArrayList([]const u8).init(allocator);
 
     const dir = try std.fs.openDirAbsolute(args.startPath, openDirOptions);
 
@@ -116,20 +111,16 @@ pub fn searchFiles(
         if (entry.kind == std.fs.File.Kind.file) {
             const flag = try checkFileExtension(args, entry);
 
-            var string: [] u8 = undefined;
+            var string: []u8 = undefined;
             if (flag) {
                 const filePath = try std.fs.path.join(allocator, &path);
                 defer allocator.free(filePath);
-                
+
                 string = try allocator.alloc(u8, filePath.len);
-                
+
                 std.mem.copyBackwards(u8, string, filePath);
-                try paths.append(string);
+                try engineV8.stack.append(string);
             }
         }
     }
-
-    std.log.info("FOUND {} files to be scanned", .{paths.items.len});
-
-    return paths;
 }
