@@ -4,8 +4,6 @@ const File = std.fs.File;
 
 const fileOpenOptions = std.fs.File.OpenFlags{ .mode = std.fs.File.OpenMode.read_only };
 
-const BUFFER_SIZE = 1024 * 1024 * 256;
-
 pub fn checkFileExtension(
     args: cli.Arguments,
     entry: std.fs.Dir.Walker.Entry,
@@ -42,13 +40,16 @@ const FindResult = struct {
 pub fn findMatchOnce(allocator: std.mem.Allocator, args: cli.Arguments, filePath: [] const u8) !?FindResult {
     const file: File = try std.fs.openFileAbsolute(filePath, fileOpenOptions);
     defer file.close();
+
     const metadata = try file.metadata();
     const fileSize = metadata.size();
-    if (fileSize >= args.searchString.len and fileSize < BUFFER_SIZE) {
+
+    if (fileSize >= args.searchString.len and fileSize < args.maxFileSize) {
         var bufferReader = std.io.bufferedReader(file.reader());
         const stream = bufferReader.reader();
+        
         //THREAD
-        const data = try stream.readAllAlloc(allocator, BUFFER_SIZE);
+        const data = try stream.readAllAlloc(allocator, args.maxFileSize);
         defer allocator.free(data);
         var k: usize = 0;
 
@@ -78,4 +79,43 @@ pub fn findMatchOnce(allocator: std.mem.Allocator, args: cli.Arguments, filePath
     }
 
     return null;
+}
+
+const openDirOptions = std.fs.Dir.OpenDirOptions{
+    .access_sub_paths = true,
+    .iterate = true,
+};
+
+pub fn searchFiles(
+    allocator: std.mem.Allocator,
+    args: cli.Arguments,
+) !std.ArrayList([]const u8) {
+    var paths: std.ArrayList([]const u8) = std.ArrayList([]const u8).init(allocator);
+
+    const dir = try std.fs.openDirAbsolute(args.startPath, openDirOptions);
+
+    var walker = try dir.walk(allocator);
+    defer walker.deinit();
+
+    while (try walker.next()) |entry| {
+        const path = [_][]const u8{ args.startPath, entry.path };
+        if (entry.kind == std.fs.File.Kind.file) {
+            const flag = try checkFileExtension(args, entry);
+
+            var string: [] u8 = undefined;
+            if (flag) {
+                const filePath = try std.fs.path.join(allocator, &path);
+                defer allocator.free(filePath);
+                
+                string = try allocator.alloc(u8, filePath.len);
+                
+                std.mem.copyBackwards(u8, string, filePath);
+                try paths.append(string);
+            }
+        }
+    }
+
+    std.log.info("FOUND {} files to be scanned", .{paths.items.len});
+
+    return paths;
 }

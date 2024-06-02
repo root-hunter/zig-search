@@ -5,6 +5,7 @@ pub const Arguments = struct {
     searchString: []u8 = "",
     caseSensitive: bool = false,
     allMatch: bool = false,
+    maxFileSize: usize = 1024 * 1024 * 256,
     fileExtensions: std.ArrayList([]const u8),
 };
 
