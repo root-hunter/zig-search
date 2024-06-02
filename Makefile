@@ -1,5 +1,5 @@
 EXEC_PATH=./bin/zig-search
-TEST_PARAMS=${HOME} "password" --file-extensions txt
+TEST_PARAMS=${HOME} "password" --file-extensions json
 
 build-exe:
 	zig build-exe src/main.zig \
@@ -15,5 +15,5 @@ test: build-exe
 rundev:
 	zig run src/main.zig -- ${TEST_PARAMS}
 
-runrelease: build-exe
+runrelease:
 	./bin/zig-search ${TEST_PARAMS}

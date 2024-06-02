@@ -116,7 +116,7 @@ pub fn main() !void {
         }
     }
 
-    std.log.info("Found {} files to be scanned", .{paths.items.len});
+    std.log.info("FOUND {} files to be scanned", .{paths.items.len});
 
     var i: usize = 0;
     const fileOpenOptions = std.fs.File.OpenFlags{ .mode = std.fs.File.OpenMode.read_only };
@@ -126,7 +126,7 @@ pub fn main() !void {
         defer file.close();
         const metadata = try file.metadata();
         const fileSize = metadata.size();
-        if (fileSize < BUFFER_SIZE) {
+        if (fileSize >= arguments.searchString.len and fileSize < BUFFER_SIZE) {
             var bufferReader = std.io.bufferedReader(file.reader());
             const stream = bufferReader.reader();
             //THREAD
@@ -144,7 +144,7 @@ pub fn main() !void {
                     }
                     const result = std.mem.eql(u8, (slice.*), arguments.searchString);
                     if (result) {
-                        std.log.info("FOUND match at {} byte: {s}", .{ k, filePath });
+                        std.log.info("FOUND match at position {} in: {s}", .{ k, filePath });
 
                         if (!arguments.allMatch) {
                             break;
