@@ -2,7 +2,9 @@ const std = @import("std");
 const cli = @import("cli.zig");
 const File = std.fs.File;
 
-const fileOpenOptions = std.fs.File.OpenFlags{ .mode = std.fs.File.OpenMode.read_only };
+const fileOpenOptions = std.fs.File.OpenFlags{ 
+    .mode = std.fs.File.OpenMode.read_only
+};
 
 pub fn checkFileExtension(
     args: cli.Arguments,
@@ -37,6 +39,15 @@ const FindResult = struct {
     filePath: [] const u8
 };
 
+
+pub fn convertToLowerCase(slice: *const [] u8) void {
+    var j: usize = 0;
+    while (j < slice.len) {
+        (slice.*)[j] = std.ascii.toLower((slice.*)[j]);
+        j += 1;
+    }
+}
+
 pub fn findMatchOnce(allocator: std.mem.Allocator, args: cli.Arguments, filePath: [] const u8) !?FindResult {
     const file: File = try std.fs.openFileAbsolute(filePath, fileOpenOptions);
     defer file.close();
@@ -56,11 +67,10 @@ pub fn findMatchOnce(allocator: std.mem.Allocator, args: cli.Arguments, filePath
         while (k + args.searchString.len + 1 < data.len) {
             if (data[k] == args.searchString[0]) {
                 const slice = &data[k..(k + args.searchString.len)];
-                var j: usize = 0;
-                while (j < slice.len) {
-                    (slice.*)[j] = std.ascii.toLower((slice.*)[j]);
-                    j += 1;
+                if(!args.caseSensitive){
+                    convertToLowerCase(slice);
                 }
+
                 const result = std.mem.eql(u8, (slice.*), args.searchString);
                 if (result) {
                     if (!args.allMatch) {
@@ -90,6 +100,10 @@ pub fn searchFiles(
     allocator: std.mem.Allocator,
     args: cli.Arguments,
 ) !std.ArrayList([]const u8) {
+    if(!args.caseSensitive) {
+        convertToLowerCase(&args.searchString);     
+    }
+
     var paths: std.ArrayList([]const u8) = std.ArrayList([]const u8).init(allocator);
 
     const dir = try std.fs.openDirAbsolute(args.startPath, openDirOptions);
