@@ -63,32 +63,32 @@ zig build-exe src/main.zig --name zig-search -static
 
 Search and export into file all path of files (with extension .txt) that contains the word "password" at least one time.
 ```sh
-zig-search "password" -f txt -e ${HOME}/Documents/zig-search_result.txt
+zig-search /start/path "password" -f txt -e ${HOME}/Documents/zig-search_result.txt
 ```
 
 Search and export into file all path of files (with extension .txt, .js, .html) that contains the word "password" at least one time.
 ```sh
-zig-search "password" -f txt,js,html -e ${HOME}/Documents/zig-search_result.txt
+zig-search /start/path "password" -f txt,js,html -e ${HOME}/Documents/zig-search_result.txt
 ```
 
 Search and export into file all path of files (with extension .txt) that contains the word "password" at least one time using 16 threads.
 ```sh
-zig-search "password" -f txt -t 16 -e ${HOME}/Documents/zig-search_result.txt
+zig-search /start/path "password" -f txt -t 16 -e ${HOME}/Documents/zig-search_result.txt
 ```
 
 Search and export into file all path of files (with extension .txt) that contains the word "password" at least one time using all possible threads.
 ```sh
-zig-search "password" -f txt -t 0 -e ${HOME}/Documents/zig-search_result.txt
+zig-search /start/path "password" -f txt -t 0 -e ${HOME}/Documents/zig-search_result.txt
 ```
 
 Only print paths to console without export result file (using all cpu core).
 ```sh
-zig-search "password" -f txt -t 0
+zig-search /start/path "password" -f txt -t 0
 ```
 
 Active case sensitive search.
 ```sh
-zig-search "Password" -f txt -t 0 -c
+zig-search /start/path "Password" -f txt -t 0 -c
 ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
