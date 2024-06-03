@@ -66,6 +66,11 @@ Search and export into file all path of files (with extension .txt) that contain
 zig-search "password" -f txt -e ${HOME}/Documents/zig-search_result.txt
 ```
 
+Search and export into file all path of files (with extension .txt, .js, .html) that contains the word "password" at least one time.
+```sh
+zig-search "password" -f txt,js,html -e ${HOME}/Documents/zig-search_result.txt
+```
+
 Search and export into file all path of files (with extension .txt) that contains the word "password" at least one time using 16 threads.
 ```sh
 zig-search "password" -f txt -t 16 -e ${HOME}/Documents/zig-search_result.txt
