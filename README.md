@@ -24,6 +24,7 @@ This is my first project written in Zig. I've been fascinated by Zig and its fea
 
 ## Features
 - 100% Zig implementation
+- Only std lib
 - Fast and efficient directory scanning
 - Recursive search in nested directories
 - Simple command-line interface
@@ -42,7 +43,7 @@ These are the prerequisites needed only to build the project, if you only want t
 ### Build 
 1. Clone the repo
 ```sh
- git clone https://github.com/root-hunter/zig-search
+git clone https://github.com/root-hunter/zig-search
 ```
 2. Move to zig-search dir
 ```sh
@@ -54,14 +55,35 @@ make build-exe
 ```
    or
 ```sh
-zig build-exe src/main.zig --name zig-search -O ReleaseSafe -static
+zig build-exe src/main.zig --name zig-search -static
 ```
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-## Usage
+## Examples
 
+Search and export into file all path of files (with extension .txt) that contains the word "password" at least one time.
 ```sh
-   zig-search /start/path <search string>
+zig-search "password" -f txt -e ${HOME}/Documents/zig-search_result.txt
+```
+
+Search and export into file all path of files (with extension .txt) that contains the word "password" at least one time using 16 threads.
+```sh
+zig-search "password" -f txt -t 16 -e ${HOME}/Documents/zig-search_result.txt
+```
+
+Search and export into file all path of files (with extension .txt) that contains the word "password" at least one time using all possible threads.
+```sh
+zig-search "password" -f txt -t 0 -e ${HOME}/Documents/zig-search_result.txt
+```
+
+Only print paths to console without export result file (using all cpu core).
+```sh
+zig-search "password" -f txt -t 0
+```
+
+Active case sensitive search.
+```sh
+zig-search "Password" -f txt -t 0 -c
 ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -72,6 +94,7 @@ zig build-exe src/main.zig --name zig-search -O ReleaseSafe -static
 - [ ] Help command
 - [X] Multihreading
 - [ ] Advance text search
+- [X] Export results to file
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>

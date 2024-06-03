@@ -31,7 +31,7 @@ pub fn checkFileExtension(
     return flag;
 }
 
-const FindResult = struct { offset: usize, filePath: []const u8 };
+pub const FindResult = struct { offset: usize, filePath: []const u8 };
 
 pub fn convertToLowerCase(slice: *const []u8) void {
     var i: usize = 0;
@@ -50,13 +50,13 @@ pub fn findMatchOnce(allocator: std.mem.Allocator, args: cli.Arguments, filePath
     const metadata = try file.metadata();
     const fileSize = metadata.size();
 
-    var lock = engineV8.lock.tryLock();
+    var isLock = engineV8.lock.tryLock();
 
-    while (!lock) {
-        lock = engineV8.lock.tryLock();
+    while (!isLock) {
+        isLock = engineV8.lock.tryLock();
     }
     defer engineV8.lock.unlock();
-    
+
     const searchString = try allocator.alloc(u8, args.searchString.len);
     std.mem.copyBackwards(u8, searchString, args.searchString);
     defer allocator.free(searchString);
@@ -91,7 +91,6 @@ pub fn findMatchOnce(allocator: std.mem.Allocator, args: cli.Arguments, filePath
                 i += 1;
             }
         }
-        
     }
 
     return null;
@@ -128,7 +127,7 @@ pub fn searchFiles(
                 string = try allocator.alloc(u8, filePath.len);
                 std.mem.copyBackwards(u8, string, filePath);
 
-                try engineV8.stack.append(string);
+                try engineV8.filePathToDoStack.append(string);
             }
         }
     }

@@ -9,3 +9,10 @@
 
 ### Added or Changed
 - Multhreading
+
+## v1.3.0
+
+### Added or Changed
+- Result file export
+- Bug fix
+- Optimizations

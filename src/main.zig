@@ -3,6 +3,7 @@ const std = @import("std");
 const cli = @import("core/cli.zig");
 const engine = @import("core/engine.zig");
 const engineV8 = @import("core/engine.v8.zig");
+const exportUtils = @import("core/engine.export.zig");
 
 const Dir = std.fs.Dir;
 const IterableDir = std.fs.IterableDir;
@@ -17,7 +18,7 @@ pub fn main() !void {
 
     const args = try cli.initArgs(allocator);
     try engine.searchFiles(allocator, args);
-    defer engineV8.stack.deinit();
+    defer engineV8.filePathToDoStack.deinit();
 
     var k: usize = 0;
 
@@ -38,16 +39,23 @@ pub fn main() !void {
 
     while (!engineV8.scanEnded) {
         var j: usize = 0;
-        var flag = true;
+        var flag: ?bool = null;
 
         while (j < engineV8.threadPool.items.len) {
-            flag = flag and engineV8.threadPool.items[j].finish;
-
+            if(flag == null){
+                flag = engineV8.threadPool.items[j].finish;
+            } else {
+                flag = flag.? and engineV8.threadPool.items[j].finish;
+            }
             j += 1;
         }
 
-        if(flag){
+        if(flag != null and flag.?){
             engineV8.scanEnded = true;
+    
+            if(args.exportPath.len > 0){
+                try exportUtils.exportResults(allocator, args, engineV8.filePathMatchStack);
+            }
         }
-    }
+    }    
 }

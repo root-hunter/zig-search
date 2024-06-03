@@ -1,9 +1,9 @@
 EXEC_PATH=./bin/zig-search
-TEST_PARAMS=${HOME} "password" --file-extensions txt,dart,js --thread-count 16
+TEST_PARAMS=${HOME} "password" -f txt -t 16 -e ${HOME}/Documents/zig-search_result.txt
 
 build-exe:
 	zig build-exe src/main.zig \
-	--name zig-search -O ReleaseSafe \
+	--name zig-search \
 	--build-id=sha1 -static
 
 	mv zig-search* bin
