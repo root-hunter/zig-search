@@ -5,6 +5,7 @@ pub const Arguments = struct {
     startPath: []u8 = "",
     exportPath: [] const u8 = undefined,
     exportInfo: bool = true,
+    exportMatchPosition: bool = false,
     searchString: []u8 = "",
     caseSensitive: bool = false,
     allMatch: bool = false,
@@ -101,6 +102,11 @@ pub fn initArgs(allocator: std.mem.Allocator) !Arguments {
             arguments.allMatch = true;
         } else if (std.mem.eql(u8, searchString, "--export-no-info")) {
             arguments.exportInfo = false;
+        } else if (std.mem.eql(u8, searchString, "--export-match-position")) {
+            // Experimental
+            // TODO Fix
+            
+            arguments.exportMatchPosition = true;
         }
     }
 

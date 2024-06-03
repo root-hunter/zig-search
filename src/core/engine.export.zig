@@ -11,9 +11,9 @@ pub fn exportResults(allocator: std.mem.Allocator, args: cli.Arguments, results:
     while (!isLock and !engineV8.scanEnded) {
         isLock = engineV8.lock.tryLock();
     }
-    
+
     if (args.exportPath.ptr != undefined and args.exportPath.len > 0) {
-        const filePath: [] const u8 = args.exportPath;
+        const filePath: []const u8 = args.exportPath;
 
         std.log.info("Export path: {s}", .{filePath});
         const file = try std.fs.createFileAbsolute(args.exportPath, createFlags);
@@ -21,14 +21,13 @@ pub fn exportResults(allocator: std.mem.Allocator, args: cli.Arguments, results:
         var i: usize = 0;
         while (i < results.items.len) {
             const result = results.items[i];
-            const lineBuffer: []u8 = try allocator.alloc(u8, result.filePath.len + 1);
 
-            if(i == 0 and args.exportInfo){
+            if (i == 0 and args.exportInfo) {
                 const lineBuffer2: []u8 = try allocator.alloc(u8, 4096);
 
                 var line = try std.fmt.bufPrint(lineBuffer2, "# SCAN INFO\n", .{});
                 _ = try file.write(line);
-                
+
                 line = try std.fmt.bufPrint(lineBuffer2, "# Searched string: \"{s}\"\n", .{args.searchString});
                 _ = try file.write(line);
 
@@ -40,8 +39,7 @@ pub fn exportResults(allocator: std.mem.Allocator, args: cli.Arguments, results:
                 _ = try file.write(line);
             }
 
-            defer allocator.free(lineBuffer);
-
+            const lineBuffer: []u8 = try allocator.alloc(u8, result.filePath.len + 1);
             const line = try std.fmt.bufPrint(lineBuffer, "{s}\n", .{result.filePath});
             _ = try file.write(line);
 

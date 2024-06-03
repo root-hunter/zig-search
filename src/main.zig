@@ -51,6 +51,12 @@ pub fn main() !void {
         }
 
         if(flag != null and flag.?){
+            var isLock = engineV8.lock.tryLock();
+
+            while (!isLock and !engineV8.scanEnded) {
+                isLock = engineV8.lock.tryLock();
+            }
+            
             engineV8.scanEnded = true;
     
             if(args.exportPath.len > 0){
