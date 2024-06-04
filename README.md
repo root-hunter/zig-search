@@ -96,7 +96,7 @@ zig-search /start/path "Password" -f txt -t 0 -c
 <!-- ROADMAP -->
 ## Roadmap
 
-- [ ] Help command
+- [X] Help command
 - [X] Multihreading
 - [ ] Advance text search
 - [X] Export results to file

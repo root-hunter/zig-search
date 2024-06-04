@@ -16,3 +16,9 @@
 - Result file export
 - Bug fix
 - Optimizations
+
+## v1.4.0
+
+### Added or Changed
+- Help command (-h, --help)
+- Bug fix
