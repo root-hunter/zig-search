@@ -78,14 +78,14 @@ pub fn findMatchOnce(allocator: std.mem.Allocator, args: cli.Arguments, filePath
                     convertToLowerCase(&slice);
                 }
 
-                const result = std.mem.eql(u8, slice, searchString);
+                const hasMatch = std.mem.eql(u8, slice, searchString);
 
-                if (result) {
+                if (hasMatch) {
                     if (!args.allMatch) {
-                        const output = FindResult{ .offset = i, .filePath = filePath.* }; 
-                        try engineV8.filePathMatchStack.append(output);
+                        const result = FindResult{ .offset = i, .filePath = filePath.* }; 
+                        try engineV8.filePathMatchStack.append(result);
 
-                        return output;
+                        return result;
                     }
                 }
 

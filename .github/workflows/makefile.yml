@@ -11,7 +11,7 @@ env:
   VERSION: 1.3.0
   
 jobs:
-  release:
+  build-linux:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -48,3 +48,5 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         release_id: ${{ steps.create_release.outputs.id }}
+  build-windows:
+    runs-on: windows-latest
