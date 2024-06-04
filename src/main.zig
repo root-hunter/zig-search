@@ -51,15 +51,9 @@ pub fn main() !void {
         }
 
         if(flag != null and flag.?){
-            var isLock = engineV8.lock.tryLock();
-
-            while (!isLock and !engineV8.scanEnded) {
-                isLock = engineV8.lock.tryLock();
-            }
-            
             engineV8.scanEnded = true;
     
-            if(args.exportPath.len > 0){
+            if(args.exportPath.ptr != undefined and args.exportPath.len > 0){
                 try exportUtils.exportResults(allocator, args, engineV8.filePathMatchStack);
             }
         }

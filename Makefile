@@ -1,5 +1,5 @@
 EXEC_PATH=./bin/zig-search
-TEST_PARAMS=${HOME} "password" -f txt -t 16 -e ${HOME}/Documents/zig-search_result.txt
+TEST_PARAMS=${HOME} "password" -f txt,dart,js -t 16 -e ${CURDIR}/results/zig-result.txt
 
 build-exe:
 	zig build-exe src/main.zig \

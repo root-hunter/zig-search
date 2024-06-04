@@ -82,7 +82,10 @@ pub fn findMatchOnce(allocator: std.mem.Allocator, args: cli.Arguments, filePath
 
                 if (result) {
                     if (!args.allMatch) {
-                        return FindResult{ .offset = i, .filePath = filePath.* };
+                        const output = FindResult{ .offset = i, .filePath = filePath.* }; 
+                        try engineV8.filePathMatchStack.append(output);
+
+                        return output;
                     }
                 }
 

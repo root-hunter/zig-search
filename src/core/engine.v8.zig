@@ -28,7 +28,6 @@ pub fn runOnEachThread(allocator: std.mem.Allocator, args: cli.Arguments, iThrea
         const result = try engine.findMatchOnce(allocator, args, &filePath);
 
         if (result != null) {
-            try filePathMatchStack.append(result.?);
             std.log.info("Thread {} FOUND match at position {} in: {s}", .{ iThread, result.?.offset, result.?.filePath });
         }
     }
