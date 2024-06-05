@@ -7,7 +7,7 @@ on:
     branches: [ "stable" ]
 
 env:
-  VERSION: 1.5.1
+  VERSION: 1.5.2
   
 jobs:
   build-linux:
@@ -56,7 +56,7 @@ jobs:
       - name: Build release
         run: zig build-exe src/main.zig --name zig-search --build-id=sha1 -static
       - name: Create release archive
-        run: zip bin/zig-search
+        run: Compress-Archive -Path bin/* -Destination zig-search-windows-v${{ env.VERSION }}.zip
       - name: Create Draft Release
         id: create_release
         uses: actions/create-release@v1
@@ -72,8 +72,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./zig-search.zip
-          asset_name: zig-search.zip
+          asset_path: ./zig-search-windows-v${{ env.VERSION }}.zip
+          asset_name: zig-search-windows-v${{ env.VERSION }}.zip
           asset_content_type: application/x-zip
 
       - uses: eregon/publish-release@v1
