@@ -35,40 +35,40 @@ pub fn initArgs(allocator: std.mem.Allocator) !?Arguments {
     var commandsCaseSensitive: std.ArrayList([]const u8) = std.ArrayList([]const u8).init(allocator);
     try commandsCaseSensitive.append("-c");
     try commandsCaseSensitive.append("--case-sensitive");
-    //defer commandsCaseSensitive.deinit();
+    defer commandsCaseSensitive.deinit();
 
     var commandsFileExtemsions: std.ArrayList([]const u8) = std.ArrayList([]const u8).init(allocator);
     try commandsFileExtemsions.append("-f");
     try commandsFileExtemsions.append("--file-extensions");
-    //defer commandsFileExtemsions.deinit();
+    defer commandsFileExtemsions.deinit();
 
     var commandsThreadCount: std.ArrayList([]const u8) = std.ArrayList([]const u8).init(allocator);
     try commandsThreadCount.append("-t");
     try commandsThreadCount.append("--thread-count");
-    //defer commandsThreadCount.deinit();
+    defer commandsThreadCount.deinit();
 
     var commandsExportResults: std.ArrayList([]const u8) = std.ArrayList([]const u8).init(allocator);
     try commandsExportResults.append("-e");
     try commandsExportResults.append("--export-results");
-    //defer commandsExportResults.deinit();
+    defer commandsExportResults.deinit();
 
     var commandsAllMatch: std.ArrayList([]const u8) = std.ArrayList([]const u8).init(allocator);
     try commandsAllMatch.append("-a");
     try commandsAllMatch.append("--all-match");
-    //defer commandsAllMatch.deinit();
+    defer commandsAllMatch.deinit();
 
     var commandsExportNoInfo: std.ArrayList([]const u8) = std.ArrayList([]const u8).init(allocator);
     try commandsExportNoInfo.append("--export-no-info");
-    //defer commandsExportNoInfo.deinit();
+    defer commandsExportNoInfo.deinit();
 
     var commandsExportMatchPostion: std.ArrayList([]const u8) = std.ArrayList([]const u8).init(allocator);
     try commandsExportMatchPostion.append("--export-match-postion");
-    //defer commandsExportMatchPostion.deinit();
+    defer commandsExportMatchPostion.deinit();
 
     var commandsHelp: std.ArrayList([]const u8) = std.ArrayList([]const u8).init(allocator);
     try commandsHelp.append("-h");
     try commandsHelp.append("--help");
-    //defer commandsHelp.deinit();
+    defer commandsHelp.deinit();
 
     var arguments = Arguments{ .fileExtensions = std.ArrayList([]const u8).init(allocator) };
     arguments.rawArguments = std.ArrayList([]const u8).init(allocator);
