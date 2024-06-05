@@ -105,11 +105,44 @@ pub fn initArgs(allocator: std.mem.Allocator) !?Arguments {
     }
 
     while (argsIterator.next()) |searchString| {
-        if (utils.checkStringInChoices(searchString, .{ "-c", "--case-sensitive" })) {
+        var commandsCaseSensitive: std.ArrayList([]const u8) = std.ArrayList([]const u8).init(allocator);
+        try commandsCaseSensitive.append("-c");
+        try commandsCaseSensitive.append("--case-sensitive");
+        defer commandsCaseSensitive.deinit();
+
+        var commandsFileExtemsions: std.ArrayList([]const u8) = std.ArrayList([]const u8).init(allocator);
+        try commandsFileExtemsions.append("-f");
+        try commandsFileExtemsions.append("--file-extensions");
+        defer commandsFileExtemsions.deinit();
+
+        var commandsThreadCount: std.ArrayList([]const u8) = std.ArrayList([]const u8).init(allocator);
+        try commandsThreadCount.append("-t");
+        try commandsThreadCount.append("--thread-count");
+        defer commandsThreadCount.deinit();
+
+        var commandsExportResults: std.ArrayList([]const u8) = std.ArrayList([]const u8).init(allocator);
+        try commandsExportResults.append("-e");
+        try commandsExportResults.append("--export-results");
+        defer commandsExportResults.deinit();
+
+        var commandsAllMatch: std.ArrayList([]const u8) = std.ArrayList([]const u8).init(allocator);
+        try commandsAllMatch.append("-a");
+        try commandsAllMatch.append("--all-match");
+        defer commandsAllMatch.deinit();
+
+        var commandsExportNoInfo: std.ArrayList([]const u8) = std.ArrayList([]const u8).init(allocator);
+        try commandsExportNoInfo.append("--export-no-info");
+        defer commandsExportNoInfo.deinit();
+
+        var commandsExportMatchPostion: std.ArrayList([]const u8) = std.ArrayList([]const u8).init(allocator);
+        try commandsExportMatchPostion.append("--export-match-postion");
+        defer commandsExportMatchPostion.deinit();
+
+        if (utils.checkStringInChoices(searchString, commandsCaseSensitive)) {
             std.log.info("Case sensitive: ON", .{});
 
             arguments.caseSensitive = true;
-        } else if (std.mem.eql(u8, searchString, "-f") or std.mem.eql(u8, searchString, "--file-extensions")) {
+        } else if (utils.checkStringInChoices(searchString, commandsFileExtemsions)) {
             const value = argsIterator.next();
 
             if (value != null) {
@@ -121,7 +154,7 @@ pub fn initArgs(allocator: std.mem.Allocator) !?Arguments {
             } else {
                 std.log.err("Not valid file extensions, the extensions must be in this form: txt,js,c,cpp \n", .{});
             }
-        } else if (std.mem.eql(u8, searchString, "-t") or std.mem.eql(u8, searchString, "--thread-count")) {
+        } else if (utils.checkStringInChoices(searchString, commandsThreadCount)) {
             const value = argsIterator.next();
 
             if (value != null) {
@@ -137,7 +170,7 @@ pub fn initArgs(allocator: std.mem.Allocator) !?Arguments {
             } else {
                 std.log.err("Not valid thread count \n", .{});
             }
-        } else if (std.mem.eql(u8, searchString, "-e") or std.mem.eql(u8, searchString, "--export-path")) {
+        } else if (utils.checkStringInChoices(searchString, commandsExportResults)) {
             const value = argsIterator.next();
 
             if (value != null) {
@@ -150,16 +183,13 @@ pub fn initArgs(allocator: std.mem.Allocator) !?Arguments {
             } else {
                 std.log.err("Not valid export path \n", .{});
             }
-        } else if (std.mem.eql(u8, searchString, "-a") or std.mem.eql(u8, searchString, "--all-match")) {
+        } else if (utils.checkStringInChoices(searchString, commandsAllMatch)) {
             arguments.allMatch = true;
-        } else if (std.mem.eql(u8, searchString, "--export-no-info")) {
+        } else if (utils.checkStringInChoices(searchString, commandsExportNoInfo)) {
             arguments.exportInfo = false;
-        } else if (std.mem.eql(u8, searchString, "--export-match-position")) {
-            // Experimental
-            // TODO Fix
-
+        } else if (utils.checkStringInChoices(searchString, commandsExportMatchPostion)) {
             arguments.exportMatchPosition = true;
-        } 
+        }
     }
 
     return arguments;
