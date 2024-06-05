@@ -52,3 +52,4 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: goto-bus-stop/setup-zig@v2
