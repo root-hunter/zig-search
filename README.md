@@ -91,9 +91,26 @@ Active case sensitive search.
 zig-search /start/path "Password" -f txt -t 0 -c
 ```
 
+Help command.
+```sh
+zig-search --help
+
+Usage: zig-search START_PATH SEARCH_STRING [OPTIONS]...
+
+Options:
+  --help                           Help command
+  -f, --file-extensions            File extensions, in this form: txt,js | js,c,cpp
+  -t, --thread-count               Scan thread count (Default: 1)
+  -a, --all-match                  Match all the occurence in the file (Default: false)
+  -c, --case-sensitive             Case sensitive search (Default: false)
+Export options:
+  -e, --export-path                File export path (ABSOLUTE)
+  --export-no-info                 Disable info header in the export file
+  --export-match-position          Add match position info for each path in the export file
+```
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-<!-- ROADMAP -->
 ## Roadmap
 
 - [X] Help command
