@@ -8,7 +8,7 @@ on:
 
 env:
   TAG: linux
-  VERSION: 1.4.2
+  VERSION: 1.5.0
   
 jobs:
   build-linux:
@@ -52,8 +52,3 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-dotnet@v1
-      - name: Build
-        run: dotnet build
-      - name: Run tests
-        run: dotnet test
