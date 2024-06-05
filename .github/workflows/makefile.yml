@@ -7,7 +7,7 @@ on:
     branches: [ "stable" ]
 
 env:
-  VERSION: 1.5.7
+  VERSION: 1.5.8
   
 jobs:
   build-linux:
@@ -42,7 +42,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: linux-build
-          path: zig-search-windows-v${{ env.VERSION }}.zip
+          path: ./zig-search-windows-v${{ env.VERSION }}.zip
   release:
     needs: [build-linux, build-windows]
     runs-on: ubuntu-latest
