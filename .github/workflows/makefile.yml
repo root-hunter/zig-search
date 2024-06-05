@@ -7,7 +7,7 @@ on:
     branches: [ "stable" ]
 
 env:
-  VERSION: 1.5.9
+  VERSION: 1.5.10
   
 jobs:
   build-linux:
@@ -68,8 +68,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          tag_name: v${{ env.VERSION }}
+          release_name: Release v${{ env.VERSION }}
           draft: false
           prerelease: false
 
