@@ -7,7 +7,7 @@ on:
     branches: [ "stable" ]
 
 env:
-  VERSION: 1.5.5
+  VERSION: 1.5.6
   
 jobs:
   build-linux:
@@ -26,7 +26,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: linux-${{ env.VERSION }}
-        release_name: ${{ env.VERSION }}
+        release_name: Release Linux v${{ env.VERSION }}
         draft: true
         prerelease: false
 
@@ -64,7 +64,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: windows-${{ env.VERSION }}
-          release_name: ${{ env.VERSION }}
+          release_name: Release Windows ${{ env.VERSION }}
           draft: true
           prerelease: false
       - uses: actions/upload-release-asset@v1.0.1
