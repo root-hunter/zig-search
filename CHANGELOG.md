@@ -22,3 +22,9 @@
 ### Added or Changed
 - Help command (-h, --help)
 - Bug fix
+
+## v1.6.0
+
+### Added or Changed
+- Search by binary content
+- Search from file
