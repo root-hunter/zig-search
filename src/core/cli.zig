@@ -91,7 +91,7 @@ pub const Arguments = struct {
     }
 
     pub fn isLoadedFromListFile(self: Arguments) bool {
-        return self.searchFilesPath.ptr != undefined and self.searchFiles.items.len > 0; 
+        return self.searchFilesPath.ptr != undefined and self.searchFiles.items.len > 0;
     }
 };
 
@@ -149,7 +149,6 @@ pub fn initArgs(allocator: std.mem.Allocator) !?Arguments {
     try commandsSearchFilesPath.append("--search-files-list");
     defer commandsSearchFilesPath.deinit();
 
-
     var commandsSearchStartDir: std.ArrayList([]const u8) = std.ArrayList([]const u8).init(allocator);
     try commandsSearchStartDir.append("-d");
     try commandsSearchStartDir.append("--start-dir");
@@ -178,7 +177,6 @@ pub fn initArgs(allocator: std.mem.Allocator) !?Arguments {
         while (i < arguments.rawArguments.items.len) {
             const argString = arguments.rawArguments.items[i];
 
-            std.log.debug("{s}", .{argString});
             if (utils.checkStringInChoices(argString, commandsSearchStartDir)) {
                 const value = arguments.rawArguments.items[i + 1];
 
@@ -233,23 +231,22 @@ pub fn initArgs(allocator: std.mem.Allocator) !?Arguments {
                 const value = arguments.rawArguments.items[i + 1];
 
                 arguments.searchFilesPath = value;
-                arguments.searchFiles = std.ArrayList([] const u8).init(allocator);
+                arguments.searchFiles = std.ArrayList([]const u8).init(allocator);
 
                 const file = try std.fs.openFileAbsolute(value, std.fs.File.OpenFlags{ .mode = std.fs.File.OpenMode.read_only });
                 defer file.close();
 
-
                 const content = try file.readToEndAlloc(allocator, 1024 * 1024);
                 var paths = std.mem.split(u8, content, "\n");
 
-
                 while (paths.next()) |path| {
-                    try arguments.searchFiles.append(path);
+                    if (path[0] != '#') {
+                        try arguments.searchFiles.append(path);
+                    }
                 }
 
-
                 if (arguments.searchFiles.items.len > 0) {
-                    std.debug.print("Search file from list: {s} (TOTAL {})\n", .{arguments.searchFilesPath, arguments.searchFilesPath.len});
+                    std.debug.print("Search file from list: {s} (TOTAL {})\n", .{ arguments.searchFilesPath, arguments.searchFilesPath.len });
                 } else {
                     std.debug.print("No args\n", .{});
                 }
