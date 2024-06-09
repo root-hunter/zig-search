@@ -62,6 +62,8 @@ pub const Arguments = struct {
     threadCount: usize = 1,
     fileExtensions: std.ArrayList([]const u8) = undefined,
     rawArguments: std.ArrayList([]const u8) = undefined,
+    searchFilesPath: []const u8 = undefined,
+    searchFiles: std.ArrayList([]const u8) = undefined,
 
     pub fn clone(self: Arguments, allocator: std.mem.Allocator) !Arguments {
         const startPath = try allocator.alloc(u8, self.startPath.len);
@@ -86,6 +88,10 @@ pub const Arguments = struct {
         const result = try std.mem.join(allocator, ",", self.fileExtensions.items);
 
         return result;
+    }
+
+    pub fn isLoadedFromListFile(self: Arguments) bool {
+        return self.searchFilesPath.ptr != undefined and self.searchFiles.items.len > 0; 
     }
 };
 
@@ -138,6 +144,17 @@ pub fn initArgs(allocator: std.mem.Allocator) !?Arguments {
     try commandsSearchBinary.append("--search-binary");
     defer commandsSearchBinary.deinit();
 
+    var commandsSearchFilesPath: std.ArrayList([]const u8) = std.ArrayList([]const u8).init(allocator);
+    try commandsSearchFilesPath.append("-sF");
+    try commandsSearchFilesPath.append("--search-files-list");
+    defer commandsSearchFilesPath.deinit();
+
+
+    var commandsSearchStartDir: std.ArrayList([]const u8) = std.ArrayList([]const u8).init(allocator);
+    try commandsSearchStartDir.append("-d");
+    try commandsSearchStartDir.append("--start-dir");
+    defer commandsSearchStartDir.deinit();
+
     var arguments = Arguments{ .fileExtensions = std.ArrayList([]const u8).init(allocator) };
     arguments.rawArguments = std.ArrayList([]const u8).init(allocator);
 
@@ -150,15 +167,6 @@ pub fn initArgs(allocator: std.mem.Allocator) !?Arguments {
     }
 
     if (arguments.rawArguments.items.len > 0) {
-        const startDirArg = arguments.rawArguments.items[0];
-
-        if (startDirArg.len > 0) {
-            arguments.startPath = @constCast(startDirArg);
-            std.debug.print("Start directory: {s}\n", .{startDirArg});
-        } else {
-            std.debug.print("No args\n", .{});
-        }
-
         const searchString = arguments.rawArguments.items[0];
 
         if (utils.checkStringInChoices(searchString, commandsHelp)) {
@@ -166,12 +174,27 @@ pub fn initArgs(allocator: std.mem.Allocator) !?Arguments {
             return null;
         }
 
-        var i: usize = 1;
+        var i: usize = 0;
         while (i < arguments.rawArguments.items.len) {
             const argString = arguments.rawArguments.items[i];
 
             std.log.debug("{s}", .{argString});
-            if (utils.checkStringInChoices(argString, commandsCaseSensitive)) {
+            if (utils.checkStringInChoices(argString, commandsSearchStartDir)) {
+                const value = arguments.rawArguments.items[i + 1];
+
+                if (value.len > 0) {
+                    const data = try allocator.alloc(u8, value.len);
+                    std.mem.copyBackwards(u8, data, value);
+
+                    arguments.startPath = data;
+
+                    std.log.info("Start path: {s}", .{data});
+
+                    i += 1;
+                } else {
+                    std.log.err("Not valid start path \n", .{});
+                }
+            } else if (utils.checkStringInChoices(argString, commandsCaseSensitive)) {
                 std.log.info("Case sensitive: ON", .{});
 
                 arguments.caseSensitive = true;
@@ -199,6 +222,34 @@ pub fn initArgs(allocator: std.mem.Allocator) !?Arguments {
                     arguments.searchString = @constCast(content);
 
                     std.debug.print("Search binary path: {any}\n", .{content});
+                } else {
+                    std.debug.print("No args\n", .{});
+                }
+
+                arguments.isBinary = true;
+
+                i += 1;
+            } else if (utils.checkStringInChoices(argString, commandsSearchFilesPath)) {
+                const value = arguments.rawArguments.items[i + 1];
+
+                arguments.searchFilesPath = value;
+                arguments.searchFiles = std.ArrayList([] const u8).init(allocator);
+
+                const file = try std.fs.openFileAbsolute(value, std.fs.File.OpenFlags{ .mode = std.fs.File.OpenMode.read_only });
+                defer file.close();
+
+
+                const content = try file.readToEndAlloc(allocator, 1024 * 1024);
+                var paths = std.mem.split(u8, content, "\n");
+
+
+                while (paths.next()) |path| {
+                    try arguments.searchFiles.append(path);
+                }
+
+
+                if (arguments.searchFiles.items.len > 0) {
+                    std.debug.print("Search file from list: {s} (TOTAL {})\n", .{arguments.searchFilesPath, arguments.searchFilesPath.len});
                 } else {
                     std.debug.print("No args\n", .{});
                 }

@@ -3,6 +3,8 @@ const cli = @import("cli.zig");
 const File = std.fs.File;
 const engineV8 = @import("engine.v8.zig");
 
+const EngineError = error{NotValidLoadedPaths};
+
 pub fn checkFileExtension(
     args: cli.Arguments,
     entry: std.fs.Dir.Walker.Entry,
@@ -44,60 +46,66 @@ pub fn convertToLowerCase(slice: *const []u8) void {
 pub fn findMatchOnce(allocator: std.mem.Allocator, args: cli.Arguments, filePath: *const []const u8) !?FindResult {
     const fileOpenOptions = std.fs.File.OpenFlags{ .mode = std.fs.File.OpenMode.read_only };
 
-    const file: File = try std.fs.openFileAbsolute(filePath.*, fileOpenOptions);
-    defer file.close();
+    if (std.fs.path.isAbsolute(filePath.*)) {
+        std.log.debug("FILE PATH: {s}", .{filePath.*});
 
-    const metadata = try file.metadata();
-    const fileSize = metadata.size();
+        const file: File = try std.fs.openFileAbsolute(filePath.*, fileOpenOptions);
+        defer file.close();
 
-    var isLock = engineV8.lock.tryLock();
+        const metadata = try file.metadata();
+        const fileSize = metadata.size();
 
-    while (!isLock) {
-        isLock = engineV8.lock.tryLock();
-    }
-    defer engineV8.lock.unlock();
+        var isLock = engineV8.lock.tryLock();
 
-    const searchString = try allocator.alloc(u8, args.searchString.len);
-    std.mem.copyBackwards(u8, searchString, args.searchString);
-    defer allocator.free(searchString);
+        while (!isLock) {
+            isLock = engineV8.lock.tryLock();
+        }
+        defer engineV8.lock.unlock();
 
-    if (fileSize >= searchString.len and fileSize < args.maxFileSize) {
-        var bufferReader = std.io.bufferedReader(file.reader());
-        const stream = bufferReader.reader();
+        const searchString = try allocator.alloc(u8, args.searchString.len);
+        std.mem.copyBackwards(u8, searchString, args.searchString);
+        defer allocator.free(searchString);
 
-        const data = try stream.readAllAlloc(allocator, args.maxFileSize);
-        defer allocator.free(data);
+        if (fileSize >= searchString.len and fileSize < args.maxFileSize) {
+            var bufferReader = std.io.bufferedReader(file.reader());
+            const stream = bufferReader.reader();
 
-        var i: usize = 0;
+            const data = try stream.readAllAlloc(allocator, args.maxFileSize);
+            defer allocator.free(data);
 
-        while (i + searchString.len + 1 < data.len) {
-            if (data[i] == searchString[0]) {
-                const slice: [] u8 = data[i..(i + searchString.len)];
+            var i: usize = 0;
 
-                if (!args.isBinary and !args.caseSensitive) {
-                    convertToLowerCase(&slice);
-                }
+            while (i + searchString.len + 1 < data.len) {
+                if (data[i] == searchString[0]) {
+                    const slice: []u8 = data[i..(i + searchString.len)];
 
-                const hasMatch = std.mem.eql(u8, slice, searchString);
-
-                if (hasMatch) {
-                    if (!args.allMatch) {
-                        const result = FindResult{ .offset = i, .filePath = filePath.* };
-                        try engineV8.filePathMatchStack.append(result);
-
-                        return result;
+                    if (!args.isBinary and !args.caseSensitive) {
+                        convertToLowerCase(&slice);
                     }
-                }
 
-                if (args.isBinary) {
-                    i += 1;
+                    const hasMatch = std.mem.eql(u8, slice, searchString);
+
+                    if (hasMatch) {
+                        if (!args.allMatch) {
+                            const result = FindResult{ .offset = i, .filePath = filePath.* };
+                            try engineV8.filePathMatchStack.append(result);
+
+                            return result;
+                        }
+                    }
+
+                    if (args.isBinary) {
+                        i += 1;
+                    } else {
+                        i += args.searchString.len;
+                    }
                 } else {
-                    i += args.searchString.len;
+                    i += 1;
                 }
-            } else {
-                i += 1;
             }
         }
+    } else {
+        return null;
     }
 
     return null;
@@ -112,23 +120,19 @@ pub fn searchFiles(
     allocator: std.mem.Allocator,
     args: cli.Arguments,
 ) !void {
-    if (!args.isBinary and !args.caseSensitive) {
-        convertToLowerCase(&args.searchString);
-    }
-
     const dir = try std.fs.openDirAbsolute(args.startPath, openDirOptions);
 
     var walker = try dir.walk(allocator);
     defer walker.deinit();
 
     while (try walker.next()) |entry| {
-        const path = [_][]const u8{ args.startPath, entry.path };
+        const paths = [_][]const u8{ args.startPath, entry.path };
         if (entry.kind == std.fs.File.Kind.file) {
             const flag = try checkFileExtension(args, entry);
 
             var string: []u8 = undefined;
             if (flag) {
-                const filePath = try std.fs.path.join(allocator, &path);
+                const filePath = try std.fs.path.join(allocator, &paths);
                 defer allocator.free(filePath);
 
                 string = try allocator.alloc(u8, filePath.len);
@@ -137,5 +141,28 @@ pub fn searchFiles(
                 try engineV8.filePathToDoStack.append(string);
             }
         }
+    }
+}
+
+pub fn loadFromListFile(
+    args: cli.Arguments,
+) !void {
+    var i: usize = 0;
+    var isLock = engineV8.lock.tryLock();
+
+    if (args.searchFiles.items.ptr != undefined and args.searchFiles.items.len > 0) {
+        while (!isLock) {
+            isLock = engineV8.lock.tryLock();
+        }
+
+        while (i < args.searchFiles.items.len) {
+            try engineV8.filePathToDoStack.append(args.searchFiles.items[i]);
+
+            i += 1;
+        }
+
+        engineV8.lock.unlock();
+    } else {
+        return EngineError.NotValidLoadedPaths;
     }
 }

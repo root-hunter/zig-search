@@ -17,9 +17,14 @@ pub fn main() !void {
 
     if (args != null) {
         defer engineV8.threadPool.deinit();
-        engineV8.init(allocator);
+        engineV8.init(allocator, args.?);
 
-        try engine.searchFiles(allocator, args.?);
+        if(args.?.isLoadedFromListFile()){
+            try engine.loadFromListFile(args.?);
+        } else {
+            try engine.searchFiles(allocator, args.?);
+        }
+
         defer engineV8.filePathToDoStack.deinit();
 
         var k: usize = 0;

@@ -28,3 +28,8 @@
 ### Added or Changed
 - Search by binary content
 - Search from file
+
+## v1.7.0
+
+### Added or Changed
+- Search loading files from list file paths (-sF)

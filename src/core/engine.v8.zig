@@ -17,10 +17,14 @@ pub const ThreadContext = struct {
 pub var threadPool: std.ArrayList(ThreadContext) = undefined;
 pub var scanEnded = false;
 
-pub fn init(allocator: std.mem.Allocator) void {
+pub fn init(allocator: std.mem.Allocator, args: cli.Arguments) void {
     filePathToDoStack = std.ArrayList([]const u8).init(allocator);
     filePathMatchStack = std.ArrayList(engine.FindResult).init(allocator);
     threadPool = std.ArrayList(ThreadContext).init(allocator);
+
+    if (!args.isBinary and !args.caseSensitive) {
+         engine.convertToLowerCase(&args.searchString);
+    }
 }
 
 pub fn runOnEachThread(allocator: std.mem.Allocator, args: cli.Arguments, iThread: usize) !void {

@@ -117,7 +117,7 @@ Export options:
 - [X] Multihreading
 - [X] Advance text search
 - [X] Export results to file
-- [ ] Scan file by dict file
+- [X] Scan file by list file paths
 
 
 
