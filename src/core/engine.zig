@@ -72,9 +72,9 @@ pub fn findMatchOnce(allocator: std.mem.Allocator, args: cli.Arguments, filePath
 
         while (i + searchString.len + 1 < data.len) {
             if (data[i] == searchString[0]) {
-                var slice = data[i..(i + searchString.len)];
+                const slice: [] u8 = data[i..(i + searchString.len)];
 
-                if (!args.caseSensitive) {
+                if (!args.isBinary and !args.caseSensitive) {
                     convertToLowerCase(&slice);
                 }
 
@@ -82,14 +82,18 @@ pub fn findMatchOnce(allocator: std.mem.Allocator, args: cli.Arguments, filePath
 
                 if (hasMatch) {
                     if (!args.allMatch) {
-                        const result = FindResult{ .offset = i, .filePath = filePath.* }; 
+                        const result = FindResult{ .offset = i, .filePath = filePath.* };
                         try engineV8.filePathMatchStack.append(result);
 
                         return result;
                     }
                 }
 
-                i += args.searchString.len;
+                if (args.isBinary) {
+                    i += 1;
+                } else {
+                    i += args.searchString.len;
+                }
             } else {
                 i += 1;
             }
@@ -108,7 +112,7 @@ pub fn searchFiles(
     allocator: std.mem.Allocator,
     args: cli.Arguments,
 ) !void {
-    if (!args.caseSensitive) {
+    if (!args.isBinary and !args.caseSensitive) {
         convertToLowerCase(&args.searchString);
     }
 

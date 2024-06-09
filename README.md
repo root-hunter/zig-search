@@ -115,8 +115,10 @@ Export options:
 
 - [X] Help command
 - [X] Multihreading
-- [ ] Advance text search
+- [X] Advance text search
 - [X] Export results to file
+- [ ] Scan file by dict file
+
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>

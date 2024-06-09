@@ -1,5 +1,7 @@
 EXEC_PATH=./bin/zig-search
-TEST_PARAMS=${HOME} "password" -f txt,dart,js -t 16 -e ${CURDIR}/results/zig-result.txt
+SEARCH_FILE=/mnt/07278d6f-dcd5-4540-ae3f-dc7f08c050e4/Dev/zig-search/results/input
+TEST_PARAMS=/mnt/07278d6f-dcd5-4540-ae3f-dc7f08c050e4/Dev/ -S ${SEARCH_FILE} -f bin -t 16 -e /mnt/07278d6f-dcd5-4540-ae3f-dc7f08c050e4/Dev/zig-search/results/zig-result.txt
+TEST_PARAMS2=/home/ -s "password" -f bin -t 16 -e /mnt/07278d6f-dcd5-4540-ae3f-dc7f08c050e4/Dev/zig-search/results/zig-result.txt
 
 build-exe:
 	zig build-exe src/main.zig \
@@ -13,7 +15,7 @@ test: build-exe
 	${EXEC_PATH} ${TEST_PARAMS}
 
 rundev:
-	zig run src/main.zig -- ${TEST_PARAMS}
+	zig run src/main.zig -- ${TEST_PARAMS2}
 
 runrelease:
 	./bin/zig-search ${TEST_PARAMS}
